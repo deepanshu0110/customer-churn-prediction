@@ -11,16 +11,17 @@ A complete machine learning system to predict customer churn with a **FastAPI ba
 ## 🌐 Live Demo
 
 - **📊 Dashboard (Streamlit Frontend):**  
-  👉 [Customer Churn Prediction Dashboard](https://customer-churn-prediction-xoywtnzmbcegohqflqpe9m.streamlit.app)
+  👉 [Customer Churn Prediction Dashboard](https://customer-churn-prediction-xoywtnzmbcegohqflgpe9m.streamlit.app)
 
 - **⚡ API (FastAPI on Render):**  
   👉 [Customer Churn Prediction API](https://customer-churn-prediction-78oq.onrender.com)  
 
-  - [/docs](https://customer-churn-prediction-78oq.onrender.com/docs) → Interactive Swagger UI  
-  - [/health](https://customer-churn-prediction-78oq.onrender.com/health) → Health check  
+    - `/docs` → Interactive Swagger UI  
+    - `/health` → Health check  
 
 - **💻 Source Code (GitHub):**  
   👉 [GitHub Repository](https://github.com/deepanshu0110/customer-churn-prediction)
+
 
 
 ---
