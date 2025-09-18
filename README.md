@@ -5,7 +5,7 @@ A complete machine learning system to predict customer churn with a **FastAPI ba
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi)](https://customer-churn-prediction-78oq.onrender.com/docs)
 [![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B?logo=streamlit)](https://customer-churn-prediction-xoywtnzmbcegohqflgpe9m.streamlit.app)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 
 ---
 
