@@ -3,8 +3,9 @@
 A complete machine learning system to predict customer churn with a **FastAPI backend** and an **interactive Streamlit dashboard**.
 
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi)](https://customer-churn-prediction-78oq.onrender.com/docs)
-[![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B?logo=streamlit)](https://customer-churn-prediction-xoywtnzmbcegohqflqpe9m.streamlit.app)
+[![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-FF4B4B?logo=streamlit)](https://customer-churn-prediction-xoywtnzmbcegohqflgpe9m.streamlit.app)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -16,23 +17,22 @@ A complete machine learning system to predict customer churn with a **FastAPI ba
 - **⚡ API (FastAPI on Render):**  
   👉 [Customer Churn Prediction API](https://customer-churn-prediction-78oq.onrender.com)  
 
-    - `/docs` → Interactive Swagger UI  
-    - `/health` → Health check  
+  - `/docs` → Interactive Swagger UI  
+  - `/health` → Health check  
 
 - **💻 Source Code (GitHub):**  
   👉 [GitHub Repository](https://github.com/deepanshu0110/customer-churn-prediction)
-
-
 
 ---
 
 ## 🌟 Features
 
 - **Machine Learning Models**: Logistic Regression & Random Forest (best model auto-selected)  
-- **REST API**: FastAPI backend with Swagger docs  
-- **Dashboard**: Streamlit UI for interactive predictions  
-- **Batch Processing**: Upload CSVs for multiple predictions  
-- **Visualizations**: Churn rates, probabilities, and confidence plots  
+- **REST API**: FastAPI backend with automatic Swagger docs  
+- **Interactive Dashboard**: Streamlit UI for real-time churn predictions  
+- **Batch Processing**: Upload CSVs for multiple customer predictions  
+- **Visualization**: Charts & metrics for churn insights  
+- **Model Comparison**: Selects best-performing model based on F1 score  
 
 ---
 
@@ -40,78 +40,81 @@ A complete machine learning system to predict customer churn with a **FastAPI ba
 
 customer-churn-prediction/
 ├── data/ # Dataset files
-
-├── models/ # Trained models (.pkl)
-
+├── models/ # Trained models
 ├── api/ # FastAPI backend
-
 │ └── main.py
-
 ├── app/ # Streamlit dashboard
-
 │ └── dashboard.py
-
 ├── data_preparation.py # Data preprocessing
-
-├── model_training.py # Model training script
-
+├── model_training.py # Model training
 ├── run_api.py # API server launcher
-
 ├── run_dashboard.py # Dashboard launcher
-
 ├── requirements.txt # Dependencies
-
 └── README.md # Documentation
 
+yaml
+Copy code
 
 ---
 
-## 🚀 Local Setup
+## 🚀 Quick Start (Local)
 
 ### 1️⃣ Setup Environment
 ```bash
+# Create virtual environment
 python -m venv churn_env
-churn_env\Scripts\activate    # Windows
-source churn_env/bin/activate # Mac/Linux
 
+# Activate (Windows)
+churn_env\Scripts\activate
+
+# Activate (Mac/Linux)
+source churn_env/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
-
-2️⃣ Train Model
+2️⃣ Prepare Data & Train Model
+bash
+Copy code
 python data_preparation.py
 python model_training.py
+3️⃣ Run the System
+Option A – Separate services (recommended):
 
-3️⃣ Run Services
-# API
+bash
+Copy code
+# Terminal 1 - API
 python run_api.py
-# or
+
+# Terminal 2 - Streamlit Dashboard
+python run_dashboard.py
+Option B – Manual launch:
+
+bash
+Copy code
+# API
 uvicorn api.main:app --reload --port 8000
 
 # Dashboard
-python run_dashboard.py
-# or
 streamlit run app/dashboard.py
+4️⃣ Access Locally
+API Docs → http://127.0.0.1:8000/docs
 
-
-API: http://127.0.0.1:8000/docs
-
-Dashboard: http://localhost:8501
+Dashboard → http://localhost:8501
 
 📊 Usage
 🔹 Single Prediction
-
 Go to Dashboard → Single Prediction
 
-Review sample or enter customer details
+Enter customer details
 
 Click Predict Churn
 
 🔹 Batch Prediction
+Upload a CSV file with customer data
 
-Prepare a CSV file with required columns
+Dashboard → Batch Prediction
 
-Upload in Dashboard → Batch Prediction
-
-View results and download predictions
+View results & download predictions
 
 📋 Required CSV Format
 Column	Type	Example
@@ -136,8 +139,7 @@ MonthlyCharges	float	29.85
 TotalCharges	float	358.20
 
 🔧 API Endpoints
-
-GET / → API root
+GET / → API status
 
 GET /health → Health check
 
@@ -149,7 +151,16 @@ POST /predict → Single prediction
 
 POST /predict_batch → Batch prediction
 
+🎯 Model Performance
+Logistic Regression & Random Forest compared
+
+Best model chosen by F1 score
+
+Decision threshold optimized automatically
+
 📦 Dependencies
+nginx
+Copy code
 pandas
 numpy
 scikit-learn
@@ -160,7 +171,24 @@ requests
 plotly
 matplotlib
 seaborn
+📈 Roadmap
+Add more models (XGBoost, LightGBM, Neural Nets)
+
+Implement retraining pipeline
+
+Add authentication for dashboard
+
+Enhance visualization with business KPIs
+
+🤝 Contributing
+Fork the repository
+
+Create a new branch
+
+Make your changes
+
+Commit & push
+
+Open a Pull Request
 
 📄 License
-
-MIT License
