@@ -87,8 +87,12 @@ streamlit run app/dashboard.py
 
 ### 4. Access the Applications
 
-- **API Documentation**: http://127.0.0.1:8000/docs
-- **Dashboard**: http://localhost:8501
+### Access the Applications
+
+⚠️ Note: These run locally after setup.  
+- **API Documentation**: http://127.0.0.1:8000/docs (after running `python run_api.py`)  
+- **Dashboard**: http://localhost:8501 (after running `python run_dashboard.py`)  
+
 
 ## 📊 Usage
 
