@@ -37,16 +37,27 @@ A complete machine learning system to predict customer churn with a **FastAPI ba
 
 customer-churn-prediction/
 ├── data/ # Dataset files
+
 ├── models/ # Trained models (.pkl)
+
 ├── api/ # FastAPI backend
+
 │ └── main.py
+
 ├── app/ # Streamlit dashboard
+
 │ └── dashboard.py
+
 ├── data_preparation.py # Data preprocessing
+
 ├── model_training.py # Model training script
+
 ├── run_api.py # API server launcher
+
 ├── run_dashboard.py # Dashboard launcher
+
 ├── requirements.txt # Dependencies
+
 └── README.md # Documentation
 
 
