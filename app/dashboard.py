@@ -1,10 +1,12 @@
-import streamlit as st
-import pandas as pd
+# app/dashboard.py
+
 import os
+import base64
 import requests
+import pandas as pd
+import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
-import base64
 
 # --------------------------
 # Page config
@@ -16,10 +18,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Use your deployed FastAPI URL by default; can be overridden via Streamlit Secrets or env var
 API_URL = os.getenv("API_URL", "https://customer-churn-prediction-78oq.onrender.com")
-
-)
-
 
 # --------------------------
 # Styles
@@ -45,30 +45,30 @@ st.markdown(
 # --------------------------
 def api_ok() -> bool:
     try:
-        r = requests.get(f"{API_URL}/health", timeout=5)
+        r = requests.get(f"{API_URL}/health", timeout=8)
         return r.status_code == 200
     except Exception:
         return False
 
 def get_model_info():
-    r = requests.get(f"{API_URL}/model_info")
+    r = requests.get(f"{API_URL}/model_info", timeout=15)
     r.raise_for_status()
     return r.json()
 
 def get_sample():
-    r = requests.get(f"{API_URL}/sample")
+    r = requests.get(f"{API_URL}/sample", timeout=15)
     r.raise_for_status()
     return r.json()["sample"]
 
-def predict_single(row_dict):
-    # FastAPI single expects {"__root__": {...}}
-    r = requests.post(f"{API_URL}/predict", json={"__root__": row_dict})
+def predict_single(row_dict: dict):
+    # FastAPI single endpoint supports Pydantic v1/v2; v1 style is safe:
+    payload = {"__root__": row_dict}
+    r = requests.post(f"{API_URL}/predict", json=payload, timeout=20)
     r.raise_for_status()
     return r.json()
 
-def predict_batch(records_list):
-    # FastAPI batch expects a bare list of dicts
-    r = requests.post(f"{API_URL}/predict_batch", json=records_list)
+def predict_batch(records_list: list[dict]):
+    r = requests.post(f"{API_URL}/predict_batch", json=records_list, timeout=60)
     r.raise_for_status()
     return r.json()
 
@@ -76,7 +76,6 @@ def predict_batch(records_list):
 # Client-side utils
 # --------------------------
 def bucket_confidence(prob: float, threshold: float) -> str:
-    # distance from decision boundary
     d = abs(prob - threshold)
     if d < 0.05:
         return "Low"
@@ -85,7 +84,6 @@ def bucket_confidence(prob: float, threshold: float) -> str:
     return "High"
 
 def add_client_fields(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
-    # prediction is 0/1 from API → map to Yes/No
     out = df.copy()
     if "prediction" in out.columns:
         out["Churn Prediction"] = out["prediction"].map({1: "Yes", 0: "No"})
@@ -117,16 +115,23 @@ def download_link(df: pd.DataFrame, filename="churn_predictions.csv"):
 # App
 # --------------------------
 def main():
-    st.markdown('<div class="main-header">📊 Customer Churn Prediction Dashboard</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="main-header">📊 Customer Churn Prediction Dashboard</div>',
+        unsafe_allow_html=True,
+    )
 
     if not api_ok():
-        st.error("❌ API Connection failed. Make sure FastAPI is running at http://127.0.0.1:8000")
-        st.info("Start it with:  uvicorn api.main:app --reload --port 8000")
+        st.error(f"❌ API connection failed. I tried: {API_URL}")
+        st.info(
+            "If you're running locally, start FastAPI with:\n\n"
+            "`uvicorn api.main:app --reload --port 8000`\n\n"
+            "Or set `API_URL` in Streamlit Secrets to your deployed API."
+        )
         return
     else:
         st.success("✅ API Connection: Healthy")
 
-    # Cache model info (threshold, features)
+    # Cache model info once per session
     if "model_info" not in st.session_state:
         try:
             st.session_state.model_info = get_model_info()
@@ -155,7 +160,6 @@ def main():
     # ---------------------- Single
     elif page == "👤 Single Prediction":
         st.header("Single Customer Churn Prediction")
-        # To keep concise, reuse the sample row for a quick try
         try:
             sample = get_sample()
         except Exception as e:
@@ -179,34 +183,45 @@ def main():
             c1, c2, c3 = st.columns(3)
             with c1:
                 css = "churn-yes" if pred == "Yes" else "churn-no"
-                st.markdown(f'<div class="metric-card"><h4>Prediction</h4><p class="{css}">{pred}</p></div>',
-                            unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="metric-card"><h4>Prediction</h4>'
+                    f'<p class="{css}">{pred}</p></div>',
+                    unsafe_allow_html=True,
+                )
             with c2:
-                st.markdown(f'<div class="metric-card"><h4>Probability</h4><p>{prob:.1%}</p></div>',
-                            unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="metric-card"><h4>Probability</h4>'
+                    f'<p>{prob:.1%}</p></div>',
+                    unsafe_allow_html=True,
+                )
             with c3:
-                st.markdown(f'<div class="metric-card"><h4>Confidence</h4><p>{conf}</p></div>',
-                            unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="metric-card"><h4>Confidence</h4>'
+                    f'<p>{conf}</p></div>',
+                    unsafe_allow_html=True,
+                )
 
             # Gauge with threshold marker
-            fig = go.Figure(go.Indicator(
-                mode="gauge+number",
-                value=prob * 100,
-                title={'text': "Churn Probability (%)"},
-                gauge={
-                    'axis': {'range': [0, 100]},
-                    'bar': {'color': "darkblue"},
-                    'steps': [
-                        {'range': [0, threshold*100], 'color': "lightgray"},
-                        {'range': [threshold*100, 100], 'color': "tomato"},
-                    ],
-                    'threshold': {
-                        'line': {'color': "red", 'width': 4},
-                        'thickness': 0.8,
-                        'value': threshold * 100,
-                    }
-                }
-            ))
+            fig = go.Figure(
+                go.Indicator(
+                    mode="gauge+number",
+                    value=prob * 100,
+                    title={"text": "Churn Probability (%)"},
+                    gauge={
+                        "axis": {"range": [0, 100]},
+                        "bar": {"color": "darkblue"},
+                        "steps": [
+                            {"range": [0, threshold * 100], "color": "lightgray"},
+                            {"range": [threshold * 100, 100], "color": "tomato"},
+                        ],
+                        "threshold": {
+                            "line": {"color": "red", "width": 4},
+                            "thickness": 0.8,
+                            "value": threshold * 100,
+                        },
+                    },
+                )
+            )
             st.plotly_chart(fig, use_container_width=True)
 
     # ---------------------- Batch
@@ -226,7 +241,6 @@ def main():
             c1, c2, c3 = st.columns(3)
             with c1:
                 st.metric("Total Rows", len(df_in))
-            # You can compute domain-specific quick stats if you know columns
             if "tenure" in df_in.columns:
                 with c2:
                     st.metric("Average Tenure", f"{df_in['tenure'].mean():.1f} months")
@@ -267,7 +281,9 @@ def main():
                 st.plotly_chart(fig_pie, use_container_width=True)
 
                 # Confidence bar
-                conf_counts = results_df["Confidence"].value_counts().reindex(["High", "Medium", "Low"]).fillna(0)
+                conf_counts = (
+                    results_df["Confidence"].value_counts().reindex(["High", "Medium", "Low"]).fillna(0)
+                )
                 fig_bar = px.bar(
                     x=conf_counts.index,
                     y=conf_counts.values,
@@ -307,7 +323,6 @@ def main():
     # ---------------------- Model Info
     elif page == "ℹ️ Model Info":
         st.header("Model Information")
-        info = st.session_state.model_info
         c1, c2 = st.columns(2)
         with c1:
             st.subheader("Details")
