@@ -193,4 +193,6 @@ Commit & push
 
 Open a Pull Request
 
-📄 License
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
