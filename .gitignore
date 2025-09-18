@@ -33,6 +33,10 @@ notebooks/.ipynb_checkpoints/
 
 # Models and Data (comment out if you want to track them)
 models/*.pkl
+!models/best_model.pkl
+!models/best_threshold.pkl
+!models/feature_names.pkl
+
 data/*.csv
 
 # IDE
