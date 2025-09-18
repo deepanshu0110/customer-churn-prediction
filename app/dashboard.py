@@ -16,9 +16,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-API_URL = os.getenv(
-    "API_URL",
-    "https://customer-churn-prediction-78oq.onrender.com"
+API_URL = os.getenv("API_URL", "https://customer-churn-prediction-78oq.onrender.com")
+
 )
 
 
