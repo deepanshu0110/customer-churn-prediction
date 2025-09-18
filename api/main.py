@@ -26,15 +26,10 @@ except Exception:  # pragma: no cover
 # ---------- App ----------
 app = FastAPI(title="Customer Churn Prediction API", version="0.1.0")
 
-# CORS (allow Streamlit on localhost:8501)
+# CORS (open for public access — you can restrict later)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:8501",
-        "http://localhost:8501",
-        "http://127.0.0.1",
-        "http://localhost",
-    ],
+    allow_origins=["*"],      # allow all origins (works with Streamlit Cloud)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
