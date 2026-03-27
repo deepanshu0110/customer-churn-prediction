@@ -3,96 +3,66 @@
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?style=flat-square&logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green?style=flat-square&logo=fastapi)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.0+-red?style=flat-square&logo=streamlit)
-![F1 Score](https://img.shields.io/badge/F1--Score-Best%20Model-brightgreen?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
-A complete machine learning system to predict customer churn with a FastAPI backend and an interactive Streamlit dashboard.
+End-to-end ML system that identifies customers at risk of churning — with a REST API for integration and a Streamlit dashboard for business users.
+
+**Live Demo:**
+- Dashboard: [customer-churn-prediction.streamlit.app](https://deepanshu0110-customer-churn-prediction.streamlit.app)
+- API Docs: [customer-churn-api.onrender.com/docs](https://customer-churn-api.onrender.com/docs)
 
 ---
 
-## Live Demo
+## Business Problem
 
-- **Dashboard (Streamlit):** [Customer Churn Prediction Dashboard](https://deepanshu0110-customer-churn-prediction.streamlit.app)
-- **API (FastAPI on Render):** [Customer Churn Prediction API](https://customer-churn-api.onrender.com)
-  - `/docs` — Interactive Swagger UI
-  - `/health` — Health check
+Acquiring a new customer costs 5–7x more than retaining an existing one. This system flags high-risk customers before they leave, so retention teams can act early.
+
+---
+
+## Model Results
+
+| Model | F1 Score | Notes |
+|---|---|---|
+| Logistic Regression | Baseline | Interpretable, fast |
+| **Random Forest** | **Best** | Auto-selected for deployment |
 
 ---
 
 ## Features
 
-- **ML Models:** Logistic Regression & Random Forest (best model auto-selected by F1 score)
-- **REST API:** FastAPI backend with automatic Swagger docs
-- **Interactive Dashboard:** Streamlit UI for real-time churn predictions
-- **Batch Processing:** Upload CSVs for multiple customer predictions
-- **Visualization:** Charts & metrics for churn insights
-- **Model Comparison:** Auto-selects best-performing model based on F1 score
-
----
-
-## Project Structure
-
-```
-customer-churn-prediction/
-├── data/                    # Dataset files
-├── models/                  # Trained models
-├── api/
-│   └── main.py              # FastAPI backend
-├── app/
-│   └── dashboard.py         # Streamlit dashboard
-├── data_preparation.py      # Data preprocessing
-├── model_training.py        # Model training pipeline
-├── run_api.py               # API server launcher
-├── run_dashboard.py         # Dashboard launcher
-├── requirements.txt
-└── README.md
-```
+- REST API (FastAPI) with Swagger UI at `/docs`
+- Streamlit dashboard for single-record and batch CSV predictions
+- Auto model selection based on F1 score
+- Visualization: churn distribution, feature importance, confusion matrix
 
 ---
 
 ## Quickstart
 
 ```bash
-# 1. Clone & setup
 git clone https://github.com/deepanshu0110/customer-churn-prediction.git
 cd customer-churn-prediction
-python -m venv churn_env
-churn_env\Scripts\activate  # Windows
-source churn_env/bin/activate  # Mac/Linux
+python -m venv env && source env/bin/activate
 pip install -r requirements.txt
-
-# 2. Prepare data & train model
 python data_preparation.py
 python model_training.py
-
-# 3. Run (Option A — separate terminals)
-# Terminal 1
-python run_api.py
-# Terminal 2
-python run_dashboard.py
-
-# 3. Run (Option B — manual)
-uvicorn api.main:app --reload --port 8000
-streamlit run app/dashboard.py
+python run_api.py        # Terminal 1
+python run_dashboard.py  # Terminal 2
 ```
-
----
-
-## Access
 
 | Service | URL |
 |---|---|
-| API Swagger | http://127.0.0.1:8000/docs |
+| API Swagger | http://localhost:8000/docs |
 | Dashboard | http://localhost:8501 |
 
 ---
 
-## ML Approach
+## ML Pipeline
 
-1. **Preprocessing** — handle missing values, encode categoricals, scale features
-2. **Training** — Logistic Regression + Random Forest with cross-validation
-3. **Evaluation** — F1 score comparison, confusion matrix, ROC-AUC
-4. **Auto-selection** — best model persisted as `.pkl` for API inference
+1. Preprocessing — missing value handling, encoding, scaling
+2. Training — Logistic Regression + Random Forest with cross-validation
+3. Evaluation — F1, ROC-AUC, confusion matrix
+4. Deployment — best model served via FastAPI
 
 ---
 
@@ -102,6 +72,10 @@ Python · Pandas · Scikit-learn · FastAPI · Streamlit · Uvicorn
 
 ---
 
-## License
+## Author
+
+**Deepanshu Garg** — Freelance Data Scientist
+- GitHub: [@deepanshu0110](https://github.com/deepanshu0110)
+- Hire: [freelancer.com/u/deepanshu0110](https://www.freelancer.com/u/deepanshu0110)
 
 MIT License
