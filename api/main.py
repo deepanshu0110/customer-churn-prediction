@@ -1,5 +1,17 @@
 # api/main.py
 from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load model artifacts on startup — modern FastAPI lifecycle pattern."""
+    try:
+        load_model_artifacts()
+        print("✅ Model artifacts loaded.")
+    except Exception as e:
+        print(f"⚠️ Failed to load model artifacts: {e}")
+    yield
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import numpy as np
@@ -112,17 +124,7 @@ def predict_proba(df: pd.DataFrame) -> np.ndarray:
     # Fallback (not ideal): use predictions as pseudo-probabilities
     return mdl.predict(X).astype(float)
 
-# ---------- Startup (modern lifespan pattern) ----------
-from contextlib import asynccontextmanager
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    try:
-        load_model_artifacts()
-        print("✅ Model artifacts loaded.")
-    except Exception as e:
-        print(f"⚠️ Failed to load model artifacts: {e}")
-    yield
 
 # ---------- Routes ----------
 @app.get("/")
