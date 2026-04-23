@@ -145,7 +145,7 @@ def main():
     # Sidebar nav
     page = st.sidebar.selectbox(
         "Choose a page",
-        ["🏠 Home", "👤 Single Prediction", "📄 Batch Prediction", "ℹ️ Model Info"],
+        ["🏠 Home", "👤 Single Prediction", "📄 Batch Prediction", "🔍 Explain Prediction", "ℹ️ Model Info"],
     )
 
     # ---------------------- Home
@@ -319,6 +319,75 @@ def main():
 
                 st.subheader("💾 Download")
                 download_link(results_df)
+
+    # ── Explain Prediction ──────────────────────────────────────────────────
+    elif page == "🔍 Explain Prediction":
+        st.header("🔍 Explainable AI — Why Did the Model Predict Churn?")
+        st.caption(
+            "SHAP (SHapley Additive exPlanations) shows each feature's exact contribution. "
+            "Clients and compliance teams increasingly require this."
+        )
+
+        try:
+            sample = get_sample()
+        except Exception as e:
+            st.error(f"Could not load sample: {e}")
+            st.stop()
+
+        st.info("Explaining the API sample customer. Upload a CSV batch page to pick your own record.")
+
+        if st.button("🔮 Explain This Prediction", key="explain_btn"):
+            try:
+                resp = requests.post(
+                    f"{API_URL}/explain",
+                    json={"__root__": sample},
+                    timeout=30,
+                )
+                resp.raise_for_status()
+                data_e = resp.json()
+            except Exception as e:
+                st.error(f"API Error — is /explain available? {e}")
+                st.stop()
+
+            prob = data_e["churn_probability"]
+            pred = "Churn ⚠️" if data_e["prediction"] == 1 else "No Churn ✅"
+            c1, c2 = st.columns(2)
+            c1.metric("Prediction", pred)
+            c2.metric("Churn Probability", f"{prob:.1%}")
+
+            st.markdown("---")
+            st.subheader("Top 10 Feature Contributions")
+            st.caption("🔴 Positive value = pushes toward churn · 🔵 Negative value = pushes away from churn")
+
+            factors  = data_e["top_factors"]
+            features = [f["feature"] for f in factors]
+            values   = [f["shap_value"] for f in factors]
+            colors   = ["#E24B4A" if v > 0 else "#185FA5" for v in values]
+
+            fig = go.Figure(go.Bar(
+                x=values, y=features, orientation="h",
+                marker_color=colors,
+                text=[f"{v:+.4f}" for v in values],
+                textposition="outside",
+            ))
+            fig.update_layout(
+                title="SHAP Feature Impact on Churn Prediction",
+                xaxis_title="SHAP Value (contribution to prediction)",
+                yaxis=dict(autorange="reversed"),
+                height=450,
+                margin=dict(l=20, r=20, t=50, b=20),
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            with st.expander("📋 All feature contributions"):
+                import pandas as _pd
+                st.dataframe(
+                    _pd.DataFrame(factors).style.background_gradient(
+                        subset=["shap_value"], cmap="RdBu_r"
+                    ),
+                    use_container_width=True,
+                )
+
 
     # ---------------------- Model Info
     elif page == "ℹ️ Model Info":
