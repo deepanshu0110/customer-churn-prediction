@@ -211,6 +211,52 @@ def explain_prediction(payload: CustomerData):
         "note": "Positive SHAP = pushes toward churn. Negative = pushes away.",
     }
 
+
+@app.post("/explain")
+def explain_prediction(payload: CustomerData):
+    """
+    SHAP-based explanation for a single prediction.
+    Returns per-feature contributions showing WHY the model predicted churn.
+    Positive SHAP value = pushes toward churn. Negative = pushes away.
+    """
+    ensure_loaded()
+    try:
+        import shap
+    except ImportError:
+        raise HTTPException(status_code=501,
+            detail="shap not installed — run: pip install shap")
+
+    record = _extract_record(payload)
+    df = to_dataframe([record])
+    mdl  = model_info["model"]
+    scal = model_info.get("scaler")
+    X    = scal.transform(df) if scal is not None else df.values
+
+    # TreeExplainer works for RF / GradientBoosting; fall back to KernelExplainer
+    try:
+        explainer   = shap.TreeExplainer(mdl)
+        shap_values = explainer.shap_values(X)
+        sv = shap_values[1][0] if isinstance(shap_values, list) else shap_values[0]
+    except Exception:
+        explainer   = shap.KernelExplainer(mdl.predict_proba, X)
+        shap_values = explainer.shap_values(X, nsamples=50)
+        sv          = shap_values[1][0]
+
+    contributions = sorted(
+        [{"feature": f, "shap_value": float(v)}
+         for f, v in zip(feature_names, sv)],
+        key=lambda x: abs(x["shap_value"]),
+        reverse=True,
+    )
+
+    proba = float(predict_proba(df)[0])
+    return {
+        "churn_probability": proba,
+        "prediction":        int(proba >= best_threshold),
+        "top_factors":       contributions[:10],
+        "note": "Positive SHAP → pushes toward churn. Negative → pushes away from churn.",
+    }
+
 @app.post("/predict_batch")
 def predict_batch(records: List[Dict[str, Any]]):
     """Predict for a list of records (each is a dict of prepared numeric features)."""
