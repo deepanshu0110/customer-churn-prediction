@@ -389,6 +389,65 @@ def main():
                 )
 
 
+    # ---------------------- Explain (SHAP)
+    elif page == "🔍 Explain Prediction":
+        st.header("🔍 Explainable AI — Why Did the Model Predict Churn?")
+        st.caption("SHAP values show each feature's contribution to the prediction. "
+                   "Builds trust with stakeholders and satisfies regulatory transparency requirements.")
+
+        try:
+            sample = get_sample()
+        except Exception as e:
+            st.error(f"Could not load sample: {e}")
+            st.stop()
+
+        with st.expander("📋 Customer Record Being Explained"):
+            st.json(sample)
+
+        if st.button("🔍 Explain This Prediction", key="shap_explain", type="primary"):
+            try:
+                with st.spinner("Running SHAP analysis..."):
+                    r = requests.post(f"{API_URL}/explain",
+                                      json={"__root__": sample}, timeout=60)
+                    r.raise_for_status()
+                    result = r.json()
+            except Exception as e:
+                st.error(f"API Error: {e}")
+                st.stop()
+
+            prob = result["churn_probability"]
+            pred = "🔴 Churn" if result["prediction"] == 1 else "🟢 No Churn"
+            c1, c2 = st.columns(2)
+            c1.metric("Prediction", pred)
+            c2.metric("Churn Probability", f"{prob:.1%}")
+
+            st.markdown("---")
+            st.subheader("Feature Contributions (Top 10)")
+            st.caption("🔴 Positive → pushes **toward** churn  ·  🔵 Negative → pushes **away** from churn")
+
+            factors = result["top_factors"]
+            feats  = [f["feature"]    for f in factors]
+            vals   = [f["shap_value"] for f in factors]
+            colors = ["#E24B4A" if v > 0 else "#185FA5" for v in vals]
+
+            fig = go.Figure(go.Bar(
+                x=vals, y=feats, orientation="h",
+                marker_color=colors,
+                text=[f"{v:+.4f}" for v in vals],
+                textposition="outside",
+            ))
+            fig.update_layout(
+                title="SHAP Values — Feature Impact on Churn Prediction",
+                xaxis_title="SHAP Value",
+                height=420,
+                yaxis=dict(autorange="reversed"),
+                margin=dict(l=180, r=60, t=50, b=40),
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            st.info(result.get("note", ""))
+
+
     # ---------------------- Model Info
     elif page == "ℹ️ Model Info":
         st.header("Model Information")
