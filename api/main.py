@@ -165,6 +165,52 @@ def predict_single(payload: CustomerData):
     pred = int(proba >= best_threshold)
     return {"churn_probability": proba, "prediction": pred}
 
+
+@app.post("/explain")
+def explain_prediction(payload: CustomerData):
+    """
+    SHAP-based explanation for a single prediction.
+    Returns top feature contributions — shows WHY the model decided churn or no-churn.
+    Explainable AI is now expected by clients and regulators alike.
+    """
+    ensure_loaded()
+    try:
+        import shap
+    except ImportError:
+        raise HTTPException(status_code=501,
+                            detail="shap not installed. Run: pip install shap")
+
+    record = _extract_record(payload)
+    df     = to_dataframe([record])
+    mdl    = model_info["model"]
+    scaler = model_info.get("scaler")
+    X      = scaler.transform(df) if scaler else df.values
+
+    # TreeExplainer for tree-based models, LinearExplainer as fallback
+    if hasattr(mdl, "estimators_") or hasattr(mdl, "tree_"):
+        explainer   = shap.TreeExplainer(mdl)
+        shap_values = explainer.shap_values(X)
+        sv = shap_values[1][0] if isinstance(shap_values, list) else shap_values[0]
+    else:
+        explainer   = shap.LinearExplainer(mdl, X)
+        shap_values = explainer.shap_values(X)
+        sv = shap_values[0]
+
+    contributions = sorted(
+        [{"feature": f, "shap_value": float(v)}
+         for f, v in zip(feature_names, sv)],
+        key=lambda x: abs(x["shap_value"]),
+        reverse=True,
+    )
+
+    proba = float(predict_proba(df)[0])
+    return {
+        "churn_probability": proba,
+        "prediction":        int(proba >= best_threshold),
+        "top_factors":       contributions[:10],
+        "note": "Positive SHAP = pushes toward churn. Negative = pushes away.",
+    }
+
 @app.post("/predict_batch")
 def predict_batch(records: List[Dict[str, Any]]):
     """Predict for a list of records (each is a dict of prepared numeric features)."""
