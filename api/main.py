@@ -24,7 +24,7 @@ except Exception:  # pragma: no cover
         return payload.__root__
 
 # ---------- App ----------
-app = FastAPI(title="Customer Churn Prediction API", version="0.1.0")
+app = FastAPI(title="Customer Churn Prediction API", version="0.1.0", lifespan=lifespan)
 
 # CORS (open for public access — you can restrict later)
 app.add_middleware(
@@ -112,15 +112,17 @@ def predict_proba(df: pd.DataFrame) -> np.ndarray:
     # Fallback (not ideal): use predictions as pseudo-probabilities
     return mdl.predict(X).astype(float)
 
-# ---------- Startup ----------
-@app.on_event("startup")
-def _on_startup():
+# ---------- Startup (modern lifespan pattern) ----------
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     try:
         load_model_artifacts()
         print("✅ Model artifacts loaded.")
     except Exception as e:
-        # Keep server up so /health can show diagnostics
         print(f"⚠️ Failed to load model artifacts: {e}")
+    yield
 
 # ---------- Routes ----------
 @app.get("/")
