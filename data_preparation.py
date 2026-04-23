@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+# LabelEncoder removed — using pd.get_dummies for nominal categoricals
 import os
 
 def download_and_prepare_data():
@@ -84,18 +84,17 @@ def clean_and_encode_data(df):
         if col in df_encoded.columns:
             df_encoded[col] = df_encoded[col].map({'Yes': 1, 'No': 0})
     
-    # Encode categorical columns with more than 2 categories
-    categorical_columns = ['Gender', 'MultipleLines', 'InternetService', 'OnlineSecurity', 
-                          'OnlineBackup', 'DeviceProtection', 'TechSupport', 'StreamingTV', 
-                          'StreamingMovies', 'Contract', 'PaymentMethod']
-    
+    # One-hot encode nominal categorical columns (LabelEncoder implies ordinal ordering
+    # which is incorrect for unordered categories like Contract type or Payment method)
+    categorical_columns = ['Gender', 'MultipleLines', 'InternetService', 'OnlineSecurity',
+                           'OnlineBackup', 'DeviceProtection', 'TechSupport', 'StreamingTV',
+                           'StreamingMovies', 'Contract', 'PaymentMethod']
+
+    existing_cat_cols = [c for c in categorical_columns if c in df_encoded.columns]
+    df_encoded = pd.get_dummies(df_encoded, columns=existing_cat_cols, drop_first=True)
+
+    # Return empty dict for le_dict — kept for API compatibility
     le_dict = {}
-    for col in categorical_columns:
-        if col in df_encoded.columns:
-            le = LabelEncoder()
-            df_encoded[col] = le.fit_transform(df_encoded[col].astype(str))
-            le_dict[col] = le
-    
     return df_encoded, le_dict
 
 def prepare_features_and_target(df_encoded):
