@@ -11,7 +11,7 @@ End-to-end ML system that identifies customers at risk of churning — with a RE
 
 **Live Demo:**
 - Dashboard: [customer-churn-prediction.streamlit.app](https://deepanshu0110-customer-churn-prediction.streamlit.app)
-- API Docs: [customer-churn-api.onrender.com/docs](https://customer-churn-api.onrender.com/docs)
+- API: not currently deployed (Render free-tier instance expired) — run locally with `uvicorn main:app --reload` and visit `/docs` for the Swagger UI
 
 ---
 
