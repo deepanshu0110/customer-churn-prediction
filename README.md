@@ -7,7 +7,9 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.0+-red?style=flat-square&logo=streamlit)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
-End-to-end ML system that identifies customers at risk of churning — with a REST API for integration and a Streamlit dashboard for business users.
+End-to-end ML system that identifies customers at risk of churning, with a REST API for integration and a Streamlit dashboard for business users.
+
+**Data note:** `data_preparation.py` generates 1,000 synthetic customers (seed 42) with the same columns as the Kaggle Telco Customer Churn dataset. It does not use the real Kaggle data.
 
 **Live Demo:**
 - Dashboard: [customer-churn-prediction.streamlit.app](https://deepanshu0110-customer-churn-prediction.streamlit.app)
@@ -23,10 +25,14 @@ Acquiring a new customer costs 5–7x more than retaining an existing one. This 
 
 ## Model Results
 
-| Model | F1 Score | Notes |
-|---|---|---|
-| Logistic Regression | Baseline | Interpretable, fast |
-| **Random Forest** | **Best** | Auto-selected for deployment |
+Test set: 200 customers. The script selects the best model by F1, then tunes the decision threshold.
+
+| Model | Accuracy | F1 | ROC-AUC |
+|---|---|---|---|
+| **Logistic Regression** | **72%** | **0.682** | **0.791** |
+| Random Forest | 71% | 0.663 | 0.797 |
+
+Logistic Regression is selected. Lowering its threshold from 0.5 to 0.4 raises F1 to 0.709, and that threshold is saved with the model.
 
 ---
 
@@ -34,7 +40,7 @@ Acquiring a new customer costs 5–7x more than retaining an existing one. This 
 
 - REST API (FastAPI) with Swagger UI at `/docs`
 - Streamlit dashboard for single-record and batch CSV predictions
-- Auto model selection based on F1 score
+- Auto model selection by F1, plus decision-threshold tuning
 - Visualization: churn distribution, feature importance, confusion matrix
 
 ---
@@ -62,7 +68,7 @@ python run_dashboard.py  # Terminal 2
 ## ML Pipeline
 
 1. Preprocessing — missing value handling, encoding, scaling
-2. Training — Logistic Regression + Random Forest with cross-validation
+2. Training — Logistic Regression + Random Forest on a train/test split
 3. Evaluation — F1, ROC-AUC, confusion matrix
 4. Deployment — best model served via FastAPI
 
