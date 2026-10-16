@@ -74,6 +74,17 @@ python run_dashboard.py  # Terminal 2
 
 ---
 
+## Tests
+
+```bash
+pip install pytest
+pytest tests/ -v
+```
+
+The tests runs data preparation and training, then calls the API's `/predict` with a sample customer. GitHub Actions runs them on every push.
+
+---
+
 ## Tech Stack
 
 Python · Pandas · Scikit-learn · FastAPI · Streamlit · Uvicorn
