@@ -36,6 +36,18 @@ Logistic Regression is selected. Lowering its threshold from 0.5 to 0.4 raises F
 
 ---
 
+## Notebook walkthrough (real data)
+
+`CHURN_PREDICTION_WALKTHROUGH.ipynb` uses the real IBM Telco Customer Churn dataset (7,043 customers), unlike the synthetic data in the scripts. Results from the executed notebook:
+
+| Model | Accuracy | F1 | ROC-AUC |
+|---|---|---|---|
+| Logistic Regression | 74.4% | 0.619 | 0.846 |
+| Random Forest | 75.7% | 0.624 | 0.840 |
+| Gradient Boosting, tuned (best CV ROC-AUC 0.849) | 79.9% | 0.576 | 0.847 |
+
+---
+
 ## Features
 
 - REST API (FastAPI) with Swagger UI at `/docs`
